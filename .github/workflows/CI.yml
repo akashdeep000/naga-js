@@ -143,6 +143,25 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+      - name: Setup Android x86_64 NDK toolchain
+        # The CLI only wires NDK linkers for arm64/armv7 Android; x86_64 is an
+        # accepted triple without toolchain setup, so mirror the CLI's exact
+        # convention (API 24, `<arch>-linux-android24-clang`) manually.
+        # Keep in sync with setAndroidEnv() in @napi-rs/cli.
+        if: matrix.settings.target == 'x86_64-linux-android'
+        run: |
+          TC="$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          test -x "$TC/x86_64-linux-android24-clang" || { echo "missing NDK x86_64 clang in $TC"; exit 1; }
+          {
+            echo "CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=$TC/x86_64-linux-android24-clang"
+            echo "TARGET_CC=$TC/x86_64-linux-android24-clang"
+            echo "TARGET_CXX=$TC/x86_64-linux-android24-clang++"
+            echo "TARGET_AR=$TC/llvm-ar"
+            echo "TARGET_RANLIB=$TC/llvm-ranlib"
+            echo "ANDROID_NDK=$ANDROID_NDK_LATEST_HOME"
+            echo "$TC" >> "$GITHUB_PATH"
+          } >> "$GITHUB_ENV"
+        shell: bash
       - name: Install dependencies
         run: pnpm install
       - name: Setup node x86
