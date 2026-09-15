@@ -446,6 +446,15 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Install emulator system libraries
+        # The stock runner image lacks libpulse, which the SDK emulator's
+        # qemu links against even with -no-audio (boot fails with
+        # "libpulse.so.0: cannot open shared object file"). Ubuntu 24.04
+        # renamed the package with a t64 suffix; fall back to the old name.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0t64 || sudo apt-get install -y libpulse0
+        shell: bash
       - name: Run smoke test on emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
