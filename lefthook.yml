@@ -1,0 +1,30 @@
+# Fast feedback locally, full suite in CI. Hooks install automatically via the
+# root `postinstall` script (`lefthook install`); run any group manually with
+# `lefthook run <hook>`. CI is the real enforcement — `--no-verify` and the
+# GitHub web UI bypass these.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: oxlint staged
+      glob: "*.{js,mjs,cjs,ts}"
+      run: pnpm exec oxlint --fix {staged_files}
+    - name: oxfmt staged
+      glob: "*.{js,mjs,cjs,ts,json,yml,yaml,md,toml}"
+      run: pnpm exec oxfmt --write {staged_files}
+    - name: cargo fmt staged
+      glob: "*.rs"
+      run: cargo fmt -- {staged_files}
+    - name: version sync check
+      run: node scripts/sync-version.mjs --check
+
+commit-msg:
+  jobs:
+    - name: conventional commits
+      run: pnpm exec commitlint --edit {1}
+
+pre-push:
+  jobs:
+    - name: clippy
+      run: cargo clippy --all-targets
+    - name: tsc
+      run: pnpm exec tsc --noEmit -p __test__/tsconfig.json

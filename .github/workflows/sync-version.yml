@@ -1,0 +1,36 @@
+name: Sync version
+# Keeps the lockstep versioning intact: whenever a PR changes the resolved
+# naga version (typically a Renovate upstream bump), package.json is updated
+# to match before CI's version-sync check runs. Same-repo branches only.
+on:
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+permissions:
+  contents: write
+jobs:
+  sync:
+    name: Sync package version with naga
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Sync version from Cargo.lock
+        run: node scripts/sync-version.mjs
+      - name: Commit sync result
+        run: |
+          if git status --porcelain | grep -q .; then
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            git add package.json
+            git commit -m 'chore: sync package version with naga'
+            git push
+          else
+            echo 'already in sync, nothing to commit'
+          fi
