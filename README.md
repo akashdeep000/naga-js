@@ -127,15 +127,15 @@ matrix.
 | Deno native           | Smoke-tested only, not claimed.                                                                                               |
 | Bun/Deno WASI         | Not supported (known upstream gaps, napi-rs#2965).                                                                            |
 
-| Platform target             | CI                                                                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| macOS x64/arm64             | Native runners.                                                                                                          |
-| Windows x64/x86/arm64       | Native runner.                                                                                                           |
-| Linux glibc x64/arm64/armv7 | `--use-napi-cross` (glibc 2.17 floor).                                                                                   |
-| Linux musl x64/arm64        | `-x` + zig.                                                                                                              |
-| Android arm64/armv7 | Cross-built on Ubuntu (NDK); build-verified (see below). |
-| FreeBSD x64                 | Tested in a FreeBSD VM job.                                                                                              |
-| WASI threads                | Ubuntu, no cross flag.                                                                                                   |
+| Platform target             | CI                                                       |
+| --------------------------- | -------------------------------------------------------- |
+| macOS x64/arm64             | Native runners.                                          |
+| Windows x64/x86/arm64       | Native runner.                                           |
+| Linux glibc x64/arm64/armv7 | `--use-napi-cross` (glibc 2.17 floor).                   |
+| Linux musl x64/arm64        | `-x` + zig.                                              |
+| Android arm64/armv7         | Cross-built on Ubuntu (NDK); build-verified (see below). |
+| FreeBSD x64                 | Tested in a FreeBSD VM job.                              |
+| WASI threads                | Ubuntu, no cross flag.                                   |
 
 ## Versioning
 
@@ -197,8 +197,32 @@ first release:
    provenance requires the match).
 2. Reserve **all** platform package names (`naga-js-darwin-x64`, …,
    `naga-js-wasm32-wasi`) — unscoped sibling names can otherwise be squatted.
-3. Set the `NPM_TOKEN` Actions secret (must publish the root and every
-   platform name).
+3. Create a short-lived granular access token (All packages, publish+stage,
+   ~7 days) as the `NPM_TOKEN` Actions secret. This bootstrap token exists
+   only because trusted publishers attach to packages that don't exist yet —
+   the first publish creates them. Migrate to OIDC immediately after (next
+   section) and revoke it.
+
+### Trusted publishing (OIDC, no long-lived tokens)
+
+Direct-publish tokens are deprecated by npm (removed January 2027), so CI
+publishes via OpenID Connect once configured. The workflow is already
+prepared: `id-token: write` is set, the publish job installs npm ≥ 11.5.1
+(OIDC minimum), and `NPM_TOKEN` is used only when the secret exists — npm
+prefers OIDC and falls back to the token otherwise.
+
+1. Publish once with the bootstrap token so all 15 packages exist
+   (`naga-js` + the 14 `naga-js-<platform>` packages).
+2. On npmjs.com, for **each** of the 15 packages: Settings → Trusted
+   publishing → Add GitHub Actions publisher with organization/user
+   `akashdeep000`, repository `naga-js`, workflow filename `CI.yml`
+   (exactly — extension included), no environment, direct `npm publish`
+   allowed.
+3. Cut a `*-next.0` prerelease and confirm it publishes with a provenance
+   badge and no token involved.
+4. Per package: Settings → Publishing access → require 2FA and disallow
+   tokens. Delete the `NPM_TOKEN` secret and revoke the bootstrap token on
+   npmjs.com. From here nothing secret remains to rotate.
 
 To cut a release once `main` is green at the desired (already synced) version:
 

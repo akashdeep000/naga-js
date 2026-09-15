@@ -437,20 +437,33 @@ jobs:
       - name: List packages
         run: ls -R ./npm
         shell: bash
+      - name: Setup npm for trusted publishing
+        # OIDC trusted publishing requires npm >= 11.5.1, but stock Node 22
+        # ships npm 10. Works for both auth modes: with OIDC the CLI uses the
+        # workflow identity, otherwise it falls back to the token below.
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
+        shell: bash
       - name: Publish
         run: |
           npm config set provenance true
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          fi
           if git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --access public
           elif git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bootstrap only: long-lived token for the first publish (which
+          # creates the packages trusted publishers attach to). Empty once
+          # trusted publishing is configured and the secret is removed —
+          # OIDC takes over automatically. See README "Release".
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
