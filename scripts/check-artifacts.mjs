@@ -28,7 +28,6 @@ const PLATFORM_OF = {
   'aarch64-unknown-linux-musl': 'linux-arm64-musl',
   'aarch64-linux-android': 'android-arm64',
   'armv7-linux-androideabi': 'android-arm-eabi',
-  'x86_64-linux-android': 'android-x64',
   'x86_64-unknown-freebsd': 'freebsd-x64',
   'wasm32-wasip1-threads': 'wasm32-wasi',
 }

@@ -133,8 +133,7 @@ matrix.
 | Windows x64/x86/arm64       | Native runner.                                                                                                           |
 | Linux glibc x64/arm64/armv7 | `--use-napi-cross` (glibc 2.17 floor).                                                                                   |
 | Linux musl x64/arm64        | `-x` + zig.                                                                                                              |
-| Android arm64/armv7         | Cross-built on Ubuntu (NDK); build-verified (the emulator has no Linux-ARM64 host build, so these cannot execute in CI). |
-| Android x64                 | Cross-built on Ubuntu (NDK); experimental emulator smoke test on Termux-provided Node (non-blocking — see below).        |
+| Android arm64/armv7 | Cross-built on Ubuntu (NDK); build-verified (see below). |
 | FreeBSD x64                 | Tested in a FreeBSD VM job.                                                                                              |
 | WASI threads                | Ubuntu, no cross flag.                                                                                                   |
 
@@ -220,4 +219,10 @@ recovery procedure — never rebuild binaries under a published version.
 
 ## Roadmap
 
-- Promote the Android emulator job to gating after sustained green runs.
+- Promote Android to runtime-tested once either becomes true: GitHub-hosted
+  ARM runners that can boot the emulator (there is no Linux-ARM64 emulator
+  host build today), or napi-rs loader support for an x86_64 Android target
+  (probed: the CLI builds the binary but the generated `index.js` only
+  resolves `arm64`/`arm` on Android, so an x86_64 artifact can never load).
+  Manual verification path in the meantime: Termux `nodejs` + `adb push` the
+  matching `.node` next to `index.js`, then `node simple-test.js` on-device.
