@@ -7,7 +7,7 @@
   "types": "index.d.ts",
   "browser": "browser.js",
   "repository": {
-    "url": "git+ssh://git@github.com/napi-rs/package-template-pnpm.git",
+    "url": "git+https://github.com/akashdeep000/naga-js.git",
     "type": "git"
   },
   "license": "MIT",
@@ -81,7 +81,9 @@
     "version:sync": "node scripts/sync-version.mjs"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["lefthook"]
+    "onlyBuiltDependencies": [
+      "lefthook"
+    ]
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.0",
