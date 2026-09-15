@@ -147,9 +147,7 @@ test('translateDetailed reports parse errors with exact labels', (t) => {
   t.is(result.output, undefined)
   t.is(result.error?.kind, 'parse')
   t.true((result.error?.message.length ?? 0) > 0)
-  t.deepEqual(result.error?.labels, [
-    { line: 1, column: 12, length: 1, message: 'expected identifier' },
-  ])
+  t.deepEqual(result.error?.labels, [{ line: 1, column: 12, length: 1, message: 'expected identifier' }])
   t.deepEqual(result.error?.notes, [])
 })
 
@@ -158,9 +156,7 @@ test('translateDetailed reports validation errors with spans', (t) => {
   t.false(result.ok)
   t.is(result.error?.kind, 'validation')
   t.true(result.error?.message.includes('at line 2, column 23') ?? false)
-  t.deepEqual(result.error?.labels, [
-    { line: 2, column: 23, length: 20, message: 'naga::ir::GlobalVariable [1]' },
-  ])
+  t.deepEqual(result.error?.labels, [{ line: 2, column: 23, length: 20, message: 'naga::ir::GlobalVariable [1]' }])
 })
 
 test('capabilities knob changes validation outcome', (t) => {
@@ -177,10 +173,7 @@ test('capabilities knob changes validation outcome', (t) => {
 
 test('flags knob changes validation outcome', (t) => {
   t.false(translateDetailed({ from: 'wgsl', to: 'wgsl', source: DUP_BINDINGS_WGSL }).ok)
-  t.true(
-    translateDetailed({ from: 'wgsl', to: 'wgsl', source: DUP_BINDINGS_WGSL, validation: { flags: [] } })
-      .ok,
-  )
+  t.true(translateDetailed({ from: 'wgsl', to: 'wgsl', source: DUP_BINDINGS_WGSL, validation: { flags: [] } }).ok)
 })
 
 test('validateWgsl accepts validator options as a second argument', (t) => {

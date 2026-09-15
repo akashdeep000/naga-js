@@ -87,6 +87,9 @@ jobs:
             target: armv7-linux-androideabi
             build: pnpm build --target armv7-linux-androideabi
           - host: ubuntu-latest
+            target: x86_64-linux-android
+            build: pnpm build --target x86_64-linux-android
+          - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             build: pnpm build --target aarch64-unknown-linux-musl -x
           - host: windows-latest
@@ -345,10 +348,23 @@ jobs:
       - name: List packages
         run: ls -R .
         shell: bash
+      - name: Assert no native artifact leaked in
+        # `NAPI_RS_FORCE_WASI=true` (not `error`) because the ava TS loader
+        # (@oxc-node/core, itself a napi package) honors the same env var and
+        # has no WASI build — `error` would fail the runner, not our code.
+        # The rigor `error` used to provide comes from this step instead: with
+        # no `.node` file present, only the WASM artifact can satisfy the load.
+        run: |
+          if ls *.node 2>/dev/null; then
+            echo "native artifact present in WASI job — refusing silent native test"
+            exit 1
+          fi
+          ls *.wasm *.wasi.cjs
+        shell: bash
       - name: Test bindings
         run: pnpm test
         env:
-          NAPI_RS_FORCE_WASI: 'error'
+          NAPI_RS_FORCE_WASI: 'true'
   test-bun:
     name: Test bindings on Bun
     needs:
@@ -391,12 +407,12 @@ jobs:
     name: Test Android bindings (experimental)
     needs:
       - build
-    # Experimental by design: boots an arm64 emulator (our Android binaries
-    # are arm64/armv7; x86_64 emulators cannot load them) and runs the smoke
-    # test on a Termux-provided Node, since Node.js ships no official Android
-    # build. Slow and occasionally flaky by nature: signal only, never gates
-    # publishing. Promote only after sustained green runs.
-    runs-on: ubuntu-24.04-arm
+    # Experimental by design, signal only, never gates publishing. Node.js
+    # ships no official Android build, so the test runs on a Termux-provided
+    # Node (see the script header). The x86_64 target is tested because the
+    # emulator has no Linux-ARM64 host build — an ARM runner cannot boot any
+    # emulator at all. The arm64/armv7 artifacts stay build-verified.
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     continue-on-error: true
     steps:
@@ -404,7 +420,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
-          name: bindings-aarch64-linux-android
+          name: bindings-x86_64-linux-android
           path: android-binding
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -413,10 +429,13 @@ jobs:
           java-version: 17
       - name: Run smoke test on emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          TERMUX_ARCH: x86_64
+          BINDING_DIR: android-binding
         with:
           api-level: 29
           target: google_apis
-          arch: arm64-v8a
+          arch: x86_64
           profile: pixel_6
           emulator-options: -no-snapshot -no-audio -no-boot-anim -memory 4096
           script: .github/scripts/test-android.sh

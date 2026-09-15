@@ -95,9 +95,7 @@ if (isMain) {
   const result = computeSync(pkg.version, pkg.naga, lockNaga)
   if (check) {
     if (result.changed) {
-      console.error(
-        `out of sync (${result.reason}). Run \`node scripts/sync-version.mjs\` and commit the result.`,
-      )
+      console.error(`out of sync (${result.reason}). Run \`node scripts/sync-version.mjs\` and commit the result.`)
       process.exit(1)
     }
     console.log(`in sync: naga-js ${pkg.version} wraps naga ${pkg.naga}`)

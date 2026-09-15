@@ -6,13 +6,13 @@ pre-commit:
   parallel: true
   jobs:
     - name: oxlint staged
-      glob: "*.{js,mjs,cjs,ts}"
+      glob: '*.{js,mjs,cjs,ts}'
       run: pnpm exec oxlint --fix {staged_files}
     - name: oxfmt staged
-      glob: "*.{js,mjs,cjs,ts,json,yml,yaml,md,toml}"
+      glob: '*.{js,mjs,cjs,ts,json,yml,yaml,md,toml}'
       run: pnpm exec oxfmt --write {staged_files}
     - name: cargo fmt staged
-      glob: "*.rs"
+      glob: '*.rs'
       run: cargo fmt -- {staged_files}
     - name: version sync check
       run: node scripts/sync-version.mjs --check

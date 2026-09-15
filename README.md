@@ -59,17 +59,17 @@ const result = translateDetailed({ from: 'wgsl', to: 'wgsl', source: 'fn broken(
 
 `translate(options)` where `options` is:
 
-| Field | Type | Notes |
-|---|---|---|
-| `from` | `'wgsl' \| 'glsl' \| 'spv'` | Input language. |
-| `to` | `'wgsl' \| 'glsl' \| 'hlsl' \| 'msl' \| 'spv' \| 'dot'` | Output language. `spv` returns a `Uint8Array`, everything else returns `string`. |
-| `source` | `string \| Uint8Array` | Text for `wgsl`/`glsl`, raw SPIR-V bytes for `spv`. |
-| `stage` | `'vertex' \| 'fragment' \| 'compute'` | Required for GLSL *input*; required for `glsl`/`spv` output when the module has more than one entry point. A sole entry point is used automatically when omitted. |
-| `entryPoint` | `string` | Entry-point name. Same resolution rules as `stage`. |
-| `glslVersion` | `string` | GLSL *output* version, e.g. `"310 es"` (default) or `"450"`. |
-| `hlslShaderModel` | `string` | e.g. `"5_1"` (default), `"6_0"` … `"6_9"`. |
-| `defines` | `Record<string, string>` | Preprocessor definitions for GLSL *input*. |
-| `validation` | `ValidationOptions` | Validator strictness (below). Defaults to everything enabled. |
+| Field             | Type                                                    | Notes                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`            | `'wgsl' \| 'glsl' \| 'spv'`                             | Input language.                                                                                                                                                   |
+| `to`              | `'wgsl' \| 'glsl' \| 'hlsl' \| 'msl' \| 'spv' \| 'dot'` | Output language. `spv` returns a `Uint8Array`, everything else returns `string`.                                                                                  |
+| `source`          | `string \| Uint8Array`                                  | Text for `wgsl`/`glsl`, raw SPIR-V bytes for `spv`.                                                                                                               |
+| `stage`           | `'vertex' \| 'fragment' \| 'compute'`                   | Required for GLSL _input_; required for `glsl`/`spv` output when the module has more than one entry point. A sole entry point is used automatically when omitted. |
+| `entryPoint`      | `string`                                                | Entry-point name. Same resolution rules as `stage`.                                                                                                               |
+| `glslVersion`     | `string`                                                | GLSL _output_ version, e.g. `"310 es"` (default) or `"450"`.                                                                                                      |
+| `hlslShaderModel` | `string`                                                | e.g. `"5_1"` (default), `"6_0"` … `"6_9"`.                                                                                                                        |
+| `defines`         | `Record<string, string>`                                | Preprocessor definitions for GLSL _input_.                                                                                                                        |
+| `validation`      | `ValidationOptions`                                     | Validator strictness (below). Defaults to everything enabled.                                                                                                     |
 
 ### Validation
 
@@ -114,28 +114,29 @@ Cross-Origin-Embedder-Policy: require-corp
 
 One binary per listed platform, built against Node-API 4. CI tests Node.js 22
 on macOS arm64/x64, Windows x64, Linux x64 glibc/musl, plus the
-WASI-threads fallback (`NAPI_RS_FORCE_WASI=error`). Other
+WASI-threads fallback (`NAPI_RS_FORCE_WASI=true`). Other
 Node-API-compatible releases are expected to work but are not in the blocking
 matrix.
 
-| Runtime | Status |
-|---|---|
-| Node.js native addon | Primary, blocking CI. |
-| Node.js WASI fallback | Tested in CI (`NAPI_RS_FORCE_WASI=error`). |
-| Browser WASI | Available via the `browser` entry; needs COOP/COEP (see above). |
-| Bun native | Tested in CI (blocking, pinned Bun 1.3.14 — the full suite passes; bump deliberately). |
-| Deno native | Smoke-tested only, not claimed. |
-| Bun/Deno WASI | Not supported (known upstream gaps, napi-rs#2965). |
+| Runtime               | Status                                                                                                                        |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Node.js native addon  | Primary, blocking CI.                                                                                                         |
+| Node.js WASI fallback | Tested in CI (`NAPI_RS_FORCE_WASI=true` over a workspace with no native artifact present, so only WASM can satisfy the load). |
+| Browser WASI          | Available via the `browser` entry; needs COOP/COEP (see above).                                                               |
+| Bun native            | Tested in CI (blocking, pinned Bun 1.3.14 — the full suite passes; bump deliberately).                                        |
+| Deno native           | Smoke-tested only, not claimed.                                                                                               |
+| Bun/Deno WASI         | Not supported (known upstream gaps, napi-rs#2965).                                                                            |
 
-| Platform target | CI |
-|---|---|
-| macOS x64/arm64 | Native runners. |
-| Windows x64/x86/arm64 | Native runner. |
-| Linux glibc x64/arm64/armv7 | `--use-napi-cross` (glibc 2.17 floor). |
-| Linux musl x64/arm64 | `-x` + zig. |
-| Android arm64/armv7 | Cross-built on Ubuntu (NDK); experimental emulator smoke test on Termux-provided Node (non-blocking — see below). |
-| FreeBSD x64 | Tested in a FreeBSD VM job. |
-| WASI threads | Ubuntu, no cross flag. |
+| Platform target             | CI                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| macOS x64/arm64             | Native runners.                                                                                                          |
+| Windows x64/x86/arm64       | Native runner.                                                                                                           |
+| Linux glibc x64/arm64/armv7 | `--use-napi-cross` (glibc 2.17 floor).                                                                                   |
+| Linux musl x64/arm64        | `-x` + zig.                                                                                                              |
+| Android arm64/armv7         | Cross-built on Ubuntu (NDK); build-verified (the emulator has no Linux-ARM64 host build, so these cannot execute in CI). |
+| Android x64                 | Cross-built on Ubuntu (NDK); experimental emulator smoke test on Termux-provided Node (non-blocking — see below).        |
+| FreeBSD x64                 | Tested in a FreeBSD VM job.                                                                                              |
+| WASI threads                | Ubuntu, no cross flag.                                                                                                   |
 
 ## Versioning
 

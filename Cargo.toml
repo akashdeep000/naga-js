@@ -14,17 +14,7 @@ serde_json = "1"
 
 [dependencies.naga]
 version = "30"
-features = [
-  "wgsl-in",
-  "wgsl-out",
-  "glsl-in",
-  "glsl-out",
-  "spv-in",
-  "spv-out",
-  "hlsl-out",
-  "msl-out",
-  "dot-out",
-]
+features = ["wgsl-in", "wgsl-out", "glsl-in", "glsl-out", "spv-in", "spv-out", "hlsl-out", "msl-out", "dot-out"]
 
 [dependencies.napi]
 version = "3.0.0"

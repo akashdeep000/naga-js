@@ -16,7 +16,13 @@
 set -u
 
 WORK=/data/local/tmp/nagajs
-TERMUX_MAIN=https://packages.termux.dev/apt/termux-main/dists/stable/main/binary-aarch64
+# Guest CPU arch under test. Defaults to aarch64 for manual runs; CI sets
+# TERMUX_ARCH=x86_64 because the emulator has no Linux-ARM64 host build, so
+# only the x86_64 target can be executed (arm64/armv7 stay build-verified).
+TERMUX_ARCH="${TERMUX_ARCH:-aarch64}"
+# Directory holding the downloaded *.node artifact under test.
+BINDING_DIR="${BINDING_DIR:-android-binding}"
+TERMUX_MAIN="https://packages.termux.dev/apt/termux-main/dists/stable/main/binary-$TERMUX_ARCH"
 # The emulator action runs this script from $GITHUB_WORKSPACE; pin absolute
 # paths before moving to the stage directory.
 REPO="${GITHUB_WORKSPACE:-$(pwd)}"
@@ -75,7 +81,7 @@ echo "==> pushing binding and runtime to device"
 adb push "$NODE_BIN" "$WORK/bin/node" || exit 1
 for so in "${SOS[@]}"; do adb push "$so" "$WORK/lib/$(basename "$so")" || exit 1; done
 adb push "$REPO/index.js" "$WORK/app/index.js" || exit 1
-adb push "$REPO"/android-binding/*.node "$WORK/app/" || exit 1
+adb push "$REPO/$BINDING_DIR"/*.node "$WORK/app/" || exit 1
 adb push "$REPO/simple-test.js" "$WORK/app/simple-test.js" || exit 1
 adb push "$REPO/package.json" "$WORK/app/package.json" || exit 1
 
