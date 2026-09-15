@@ -15,6 +15,11 @@ permissions:
       - '**'
     paths-ignore:
       - '**/*.md'
+      # ...except the changelog: release commits are CHANGELOG.md plus a tag,
+      # and must build and publish. (Negation may be a no-op on some runners;
+      # release commits therefore also bundle any pending workflow change, so
+      # at least one non-ignored file is always present.)
+      - '!CHANGELOG.md'
       - LICENSE
       - '**/*.gitignore'
       - .editorconfig
