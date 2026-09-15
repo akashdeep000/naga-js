@@ -462,10 +462,16 @@ jobs:
           BINDING_DIR: android-binding
         with:
           api-level: 29
-          target: google_apis
+          # `default` (no Google APIs): smaller image, faster boot. The smoke
+          # test only needs a shell plus the Termux-provided node binary.
+          target: default
           arch: x86_64
           profile: pixel_6
-          emulator-options: -no-snapshot -no-audio -no-boot-anim -memory 4096
+          disable-animations: true
+          # Tuned for software emulation (`-accel off` on runners without
+          # KVM): 2 GB guest (4 GB starves the host emulator process),
+          # software GL (no GPU on the runner), no snapshot churn.
+          emulator-options: -no-window -no-snapshot -no-snapshot-save -no-audio -no-boot-anim -memory 2048 -gpu swiftshader_indirect
           script: .github/scripts/test-android.sh
   publish:
     name: Publish
